@@ -1,0 +1,25 @@
+{
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#1e8d9c",
+        "activityBar.activeBorder": "#861a79",
+        "activityBar.background": "#1e8d9c",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#861a79",
+        "activityBarBadge.foreground": "#e7e7e7",
+        "statusBar.background": "#166671",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#1e8d9c",
+        "titleBar.activeBackground": "#166671",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#16667199",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    "peacock.color": "#166671",
+    "cSpell.words": [
+        "Truskinger",
+        "Xunit",
+        "ebnf",
+        "grammkit"
+    ]
+}

@@ -1,0 +1,17 @@
+/* visualize this here: https://bottlecaps.de/rr/ui */
+/* or generate docs images with  grammkit -t md  -f ebnf  interval.ebnf   */
+ 
+expression ::= empty | number | tolerance | inequality | interval | approximation
+
+tolerance ::= number ("±" | "+-") number
+inequality ::= (">" | "<" | "≥" | "≤" | ">=" | "<=") number
+approximation ::= ( "~" | "≈") number
+interval ::= ("[" | "(") number "," number (")" | "]")
+empty ::= "∅"
+
+number ::= constant | real
+constant ::= "ε" | "∞" | "-∞"
+real ::= pos | neg | zero
+pos ::= digit+ ("." digit+ )?
+neg ::= "-" pos
+digit ::=  [0-9]
