@@ -9,7 +9,7 @@ namespace Math.Interval
             = (in (double Value, bool Inclusive) minimum, in (double Value, bool Inclusive) maximum)
             => new Interval(minimum, maximum);
 
-        public readonly static Interval EmptyDefault = EmptyAt(default);
+        public readonly static Interval Empty = EmptyAt(default);
 
         public static Interval Degenerate(double value)
         {

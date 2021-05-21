@@ -18,7 +18,6 @@ namespace Math.Interval
     public readonly partial struct Interval<T> : IInterval<T>
         where T : struct, IComparable<T>, IEquatable<T>, IFormattable
     {
-
         public Interval(T minimum, T maximum) : this()
         {
             Minimum = minimum;
@@ -181,9 +180,17 @@ namespace Math.Interval
         public PartitionResult<IInterval<T>> Partition(T point)
             => IntervalHelpers<T, Interval<T>>.Partition(this, point, Create);
 
-        public ((T Value, bool Inclusive) Minimum, (T Value, bool Inclusive) Maximum) Deconstruct()
+        public void Deconstruct(out (T Value, bool Inclusive) minimum, out (T Value, bool Inclusive) maximum)
         {
-            return ((Minimum, IsMinimumInclusive), (Maximum, IsMaximumInclusive));
+            minimum = (Minimum, IsMinimumInclusive);
+            maximum = (Maximum, IsMaximumInclusive);
+        }
+
+        public void Deconstruct(out T minimum, out T maximum, out Topology topology)
+        {
+            minimum = Minimum;
+            maximum = Maximum;
+            topology = Topology;
         }
 
         public override string ToString()

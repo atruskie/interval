@@ -22,7 +22,7 @@ namespace Math.Interval
         public T Max { get; }
         public EndpointParser EndPointParser { get; }
 
-        public delegate bool EndpointParser(in ReadOnlySpan<byte> bytes, out T value, out int unconsumed);
+        public delegate bool EndpointParser(in ReadOnlySpan<byte> bytes, out T value, out int consumed);
 
         internal Parser(T epsilon, IntervalHelpers<T,U>.Create create, T min, T max, EndpointParser endPointParser, 
             Func<T, T, U> createTolerance = null, Func<T,U> createApproximation = null, Func<T,U> createSameOrderOfMagnitude = null) {
@@ -73,7 +73,7 @@ namespace Math.Interval
                     return true;
                 }
             }
-            else if (ParseBounded(@string, out value, ref error))
+            else if (ParseInterval(@string, out value, ref error))
             {
                 // bounded 'traditional' interval
                 return true;
@@ -253,7 +253,7 @@ namespace Math.Interval
             }
         }
 
-        private bool ParseBounded(ReadOnlySpan<byte> span, out U value, ref string error)
+        private bool ParseInterval(ReadOnlySpan<byte> span, out U value, ref string error)
         {
             if (span[0] is not leftSquare or leftParen)
             {

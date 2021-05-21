@@ -36,8 +36,22 @@ namespace Math.Interval
             };
         }
 
-        
 
+        public static double UnitNormalize(this Interval i, double value, bool clamp = true)
+        {
+            var v = (value - i.Minimum) / i.Range;
+            return clamp ? Math.Clamp(v, Interval.Unit.Minimum, Interval.Unit.Maximum) : v;
+        }
+
+        public static Interval Scale(this Interval i, double value)
+        {
+            var middle = i.Minimum + i.Radius;
+            var scaled = i.Range * value * 0.5;
+            return (middle - scaled, middle + scaled, i.Topology);
+        }
+
+        public static Interval Extend(this Interval i, double value) => (i.Minimum - value, i.Maximum + value, i.Topology);
+        public static Interval Shift(this Interval i, double value) => (i.Minimum + value, i.Maximum + value, i.Topology);
 
 
     }

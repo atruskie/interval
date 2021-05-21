@@ -40,15 +40,27 @@ namespace Math.Interval
         bool IsSuperset(IInterval<T> other);
         bool IntersectsWith(IInterval<T> other);
 
+
+
         IntersectionDetails GetIntersectionDetails(IInterval<T> other) => GetIntersection(this, other);
+
+
+
+        Interval<T> Union(Interval<T> other);
+        SplitResult<Interval<T>> Difference(Interval<T> other);
+        BiSplitResult<T> SymmetricDifference(Interval<T> other);
+        Interval<T> Intersection(Interval<T> other);
+
+
         PartitionResult<IInterval<T>> Partition(T point);
 
 
 
-        ((T Value, bool Inclusive) Minimum, (T Value, bool Inclusive) Maximum) Deconstruct();
+        void Deconstruct(out (T Value, bool Inclusive) minimum, out (T Value, bool Inclusive) maximum);
+        void Deconstruct(out T minimum, out T maximum, out Topology topology);
 
         string ToString();
-        string ToString(IntervalFormattingOptions intervalFormat, string endpointFormat,IFormatProvider provider);
+        string ToString(IntervalFormattingOptions intervalFormat, string endpointFormat, IFormatProvider provider);
     }
 
     public interface IUnboundedInterval<T> : IInterval<T>
@@ -57,6 +69,8 @@ namespace Math.Interval
         bool IsLeftBounded { get; }
         bool IsRightBounded { get; }
         bool IsBounded { get; }
+
+        BiSplitResult<T> Complement();
     }
 
     public abstract record SplitResult<T>();
@@ -64,6 +78,8 @@ namespace Math.Interval
     public record MonoSplitResult<T>(T Result) : SplitResult<T>();
 
     public abstract record PartitionResult<T>();
-    public record DisjointPartition<T>(T Empty) : PartitionResult<T>();
+    public record DisjointPartition<T>(T Disjoint) : PartitionResult<T>();
     public record ValidPartition<T>(T Lower, T Point, T Upper) : PartitionResult<T>();
+
+
 }

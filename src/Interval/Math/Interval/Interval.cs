@@ -5,6 +5,7 @@ using System.Globalization;
 using static Math.Interval.Topology;
 using static Math.Interval.Comparison;
 using static Math.Interval.IntersectionDetails;
+using System.Text.Unicode;
 
 namespace Math.Interval
 {
@@ -46,7 +47,8 @@ namespace Math.Interval
         /// This property is designed to be give a useful real number that allows the interval to placed in a domain.
         /// If you need the strict mathematical definition of the midpoint then see <c>Center</c>.
         /// <value></value>
-        public double Anchor => this switch {
+        public double Anchor => this switch
+        {
             { IsBounded: true } => Center,
             { IsLeftBounded: true } => Minimum,
             { IsRightBounded: true } => Maximum,
@@ -75,7 +77,7 @@ namespace Math.Interval
 
         public double Range => Maximum - Minimum;
 
-        public double Radius => System.Math.Abs(Minimum - Maximum) / 2;
+        public double Radius => System.Math.Abs(Minimum - Maximum) / 2.0;
 
         public bool IsLeftBounded => Minimum != double.NegativeInfinity;
         public bool IsRightBounded => Maximum != double.PositiveInfinity;
@@ -217,18 +219,29 @@ namespace Math.Interval
             => IntervalHelpers<double, Interval>.Difference(this, other, Create);
 
 
-        public (Interval Lower, Interval Upper) SymmetricDifference(Interval other)
-             => ((Interval Lower, Interval Upper))IntervalHelpers<double, Interval>.SymmetricDifference(this, other, Create);
+        public BiSplitResult<Interval> SymmetricDifference(Interval other)
+             => IntervalHelpers<double, Interval>.SymmetricDifference(this, other, Create);
 
         public Interval Intersection(Interval other)
             => (Interval)IntervalHelpers<double, Interval>.Intersection(this, other, Create);
 
-        public PartitionResult<IInterval<double>> Partition(double point)
+        public PartitionResult<Interval> Partition(double point)
             => IntervalHelpers<double, Interval>.Partition(this, point, Create);
 
-        public ((double Value, bool Inclusive) Minimum, (double Value, bool Inclusive) Maximum) Deconstruct()
+        public SplitResult<Interval> Complement()
+            => IntervalHelpers<double, Interval>.Complement(this, double.NegativeInfinity, double.PositiveInfinity, Create);
+
+        public void Deconstruct(out (double Value, bool Inclusive) minimum, out (double Value, bool Inclusive) maximum)
         {
-            return ((Minimum, IsMinimumInclusive), (Maximum, IsMaximumInclusive));
+            minimum = (Minimum, IsMinimumInclusive);
+            maximum = (Maximum, IsMaximumInclusive);
+        }
+
+        public void Deconstruct(out double minimum, out double maximum, out Topology topology)
+        {
+            minimum = Minimum;
+            maximum = Maximum;
+            topology = Topology;
         }
 
         public override string ToString()
@@ -236,15 +249,33 @@ namespace Math.Interval
             return Formatter<double, Interval>.Format(this);
         }
 
-        public string ToString(IntervalFormattingOptions options, string endpointFormatString, IFormatProvider formatProvider)
+        public string ToString(IntervalFormattingOptions options, string endpointFormatString = "G", IFormatProvider formatProvider = null)
         {
             return Formatter<double, Interval>.Format(this, options, endpointFormatString, formatProvider);
         }
 
-        public double UnitNormalize(double value, bool clamp = true)
+
+        private static readonly Parser<double, Interval> parser = new(
+            double.Epsilon,
+            Create,
+            double.NegativeInfinity,
+            double.PositiveInfinity,
+            (in ReadOnlySpan<byte> bytes, out double value, out int consumed) => System.Buffers.Text.Utf8Parser.TryParse(bytes, out value, out consumed),
+            FromTolerance,
+            Approximation,
+            SameOrderOfMagnitudeAs
+        );
+
+        public static Interval Parse(ReadOnlySpan<char> @string)
         {
-            var v = (value - Minimum) / Range;
-            return clamp ? System.Math.Clamp(v, 0, 1) : v;
-         }
+
+            var bytes = System.Text.Encoding.UTF8.co
+            return parser.Parse(System.Text.Encoding.UTF8.gets);
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> @string, out Interval value, out string error)
+        {
+            return parser.TryParse(@string, out value, out error);
+        }
     }
 }

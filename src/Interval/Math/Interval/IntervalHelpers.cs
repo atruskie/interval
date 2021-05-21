@@ -9,7 +9,7 @@ using static Math.Interval.IntersectionDetails;
 
 namespace Math.Interval
 {
-    public  static partial class IntervalHelpers<T, U>
+    public static partial class IntervalHelpers<T, U>
         where T : struct, IComparable<T>, IEquatable<T>, IFormattable
                 where U : IInterval<T>
     {
@@ -32,8 +32,8 @@ namespace Math.Interval
         public static IInterval<T> Intersection(in IInterval<T> a, in IInterval<T> b, Create create)
         {
             var intersection = GetIntersection(a, b);
-            var (a1, a2) = a.Deconstruct();
-            var (b1, b2) = b.Deconstruct();
+            var (a1, a2) = a;
+            var (b1, b2) = b;
 
             return intersection switch
             {
@@ -51,8 +51,8 @@ namespace Math.Interval
         public static SplitResult<U> Difference(in IInterval<T> a, in IInterval<T> b, Create create)
         {
             var intersection = GetIntersection(a, b);
-            var (a1, a2) = a.Deconstruct();
-            var (b1, b2) = b.Deconstruct();
+            var (a1, a2) = a;
+            var (b1, b2) = b;
 
             // Difference = A - B
             // where A could overlap or be placed anywhere over B
@@ -80,37 +80,53 @@ namespace Math.Interval
         }
 
 
-        public static (IInterval<T> Lower, IInterval<T> Upper) SymmetricDifference(in IInterval<T> a, in IInterval<T> b, Create create)
+        public static BiSplitResult<U> SymmetricDifference(in IInterval<T> a, in IInterval<T> b, Create create)
         {
             var intersection = GetIntersection(a, b);
-            var (a1, a2) = a.Deconstruct();
-            var (b1, b2) = b.Deconstruct();
+            var (a1, a2) = a;
+            var (b1, b2) = b;
 
 
             // Symmetric Difference = A XOR B
             // where A could overlap or be placed anywhere over B
             return intersection switch
             {
-                Intersecting and { Closure: Equal } => (Empty(create), Empty(create)),
-                { IsSubset: true } => (
+                Intersecting and { Closure: Equal } => new(Empty(create), Empty(create)),
+                { IsSubset: true } => new(
                     create(b1, (a1.Value, Exclusive)),
                     create((a2.Value, Exclusive), b2)
                 ),
                 // if A is a superset of B then we're 'cutting a hole' into A
-                { IsSuperset: true } => (
+                { IsSuperset: true } => new(
                     create(a1, (b1.Value, Exclusive)),
                     create((b2.Value, Exclusive), a2)
                 ),
-                Intersecting and { Closure: Closure.AOverlapsLowerB } => (
+                Intersecting and { Closure: Closure.AOverlapsLowerB } => new(
                     create(a1, (b1.Value, Exclusive)),
                     create((a2.Value, Exclusive), b2)
                 ),
-                Intersecting and { Closure: Closure.AOverlapsUpperB } => (
+                Intersecting and { Closure: Closure.AOverlapsUpperB } => new(
                     create(b1, (a.Minimum, Exclusive)),
                     create((a2.Value, Exclusive), b2)
                 ),
-                Disjoint => (a, b),
+                Disjoint => new((U)a, (U)b),
                 _ => throw new NotImplementedException($"Unsupported symmetric difference operation between {a} and {b}")
+            };
+        }
+
+        public static SplitResult<U> Complement(in IInterval<T> a, T min, T max, Create create)
+        {
+            return a switch {
+                _ when a.Minimum.Equals(min) && a.Maximum.Equals(max) => 
+                    new MonoSplitResult<U>(Empty(create)),
+                _ when a.Minimum.Equals(min) => 
+                    new MonoSplitResult<U>(create((a.Maximum, false), (max, true))),
+                _ when a.Maximum.Equals(max) =>
+                    new MonoSplitResult<U>(create((min, true), (a.Minimum, false))),
+                _ => new BiSplitResult<U>(
+                    create((min, true), (a.Minimum, false)),
+                    create((a.Maximum, false), (max, true))
+                )
             };
         }
 
@@ -126,18 +142,20 @@ namespace Math.Interval
             };
         }
 
-        public static PartitionResult<IInterval<T>> Partition(in IInterval<T> a, T point, Create create)
+        public static PartitionResult<U> Partition(in IInterval<T> a, T point, Create create)
         {
             if (a.Contains(point))
             {
-                return new ValidPartition<IInterval<T>>(
-                    new Interval<T>(a.Minimum, point, a.Topology.OpenMaximum()),
+                var (a1, a2) = a;
+
+                return new ValidPartition<U>(
+                    create(a1, (point, false)),
                     Degenerate(point, create),
-                    new Interval<T>(point, a.Maximum, a.Topology.OpenMinimum())
+                    create((point, false), a2)
                 );
             }
 
-            return new DisjointPartition<IInterval<T>>(Empty(create));
+            return new DisjointPartition<U>(Empty(create));
         }
 
 
